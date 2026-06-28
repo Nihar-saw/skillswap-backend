@@ -27,11 +27,14 @@ const meetingRoutes = require("./routes/meetingRoutes");
 const screenShareRoutes = require("./routes/screenShareRoutes");
 const whiteboardRoutes = require("./routes/whiteboardRoutes");
 const codeRoutes = require("./routes/codeRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const securityMiddleware = require("./middleware/security");
+const { apiLimiter } = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorHandler");
 const app = express();
 
 app.use(securityMiddleware);
+app.use(apiLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -66,6 +69,7 @@ app.use("/api/meeting", meetingRoutes);
 app.use("/api/screen-share", screenShareRoutes);
 app.use("/api/whiteboard", whiteboardRoutes);
 app.use("/api/code", codeRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use(errorHandler);
 

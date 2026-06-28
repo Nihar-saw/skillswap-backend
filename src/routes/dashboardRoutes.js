@@ -1,10 +1,9 @@
 const express = require("express");
-const { joinTeam, getTeams } = require("../controllers/teamController");
+const { getDashboard } = require("../controllers/dashboardController");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", protect, getTeams);
-router.post("/join/:teamId", protect, joinTeam);
+router.get("/", protect, getDashboard);
 
 module.exports = router;

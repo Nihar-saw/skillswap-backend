@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const { generateToken } = require("../utils/jwt");
+const { generateToken, generateRefreshToken, verifyRefreshToken } = require("../utils/jwt");
 const { initializeWallet } = require("../services/payment/paymentService");
 const { createNotification } = require("../services/notification/notificationService");
 
@@ -47,6 +47,7 @@ const registerUser = async (req, res) => {
       skills: user.skills,
       trustScore: user.trustScore,
       token: generateToken(user._id),
+      refreshToken: generateRefreshToken(user._id),
     });
 
   } catch (error) {
@@ -75,11 +76,13 @@ const loginUser = async (req, res) => {
         skills: user.skills,
         trustScore: user.trustScore,
         token: generateToken(user._id),
+        refreshToken: generateRefreshToken(user._id),
       });
     }
 
-    res.status(401).json({
-      message: "Invalid Credentials",
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password",
     });
 
   } catch (error) {
@@ -96,8 +99,34 @@ const getCurrentUser = async (req, res) => {
   });
 };
 
+const refreshAccessToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ success: false, message: "Refresh token required" });
+    }
+
+    const decoded = verifyRefreshToken(refreshToken);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User no longer exists" });
+    }
+
+    return res.json({
+      success: true,
+      token: generateToken(user._id),
+      refreshToken: generateRefreshToken(user._id),
+    });
+  } catch {
+    return res.status(401).json({ success: false, message: "Invalid or expired refresh token" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getCurrentUser,
+  refreshAccessToken,
 };
